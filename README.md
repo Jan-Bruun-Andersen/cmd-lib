@@ -1,2 +1,2 @@
 # cmd-lib
-A set Windows CMD interpreter utilities that I have useful
+A set of Windows CMD interpreter utilities that I have found useful.
