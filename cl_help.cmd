@@ -1,20 +1,55 @@
-:cl_help path-to-script [label]
+:cl_help path-to-script [label-name]
 
 :: = DESCRIPTION
-:: =   Emits a multi-line help-description for this script using information
-:: =   embedded in the :main label and a set of comment lines (actually, a dummy
-:: =   label).
+:: =   Emits a multi-line help-description for a CMD-script using information
+:: =   embedded in the script itself. The information consists of two parts:
 :: =
-:: =   The :mail label and help-text should follow this pattern:
+:: =     1) A label (default :main) followed by a usage-like summary.
+:: =     2) A set of comment lines (actually, dummy labels) using the special
+:: =        format ':: = help-text 
+:: =
+:: =   The label and help-text should follow this pattern:
 :: =
 :: =       :main /? | options and parameters
 :: =
 :: =       :: = DESCRIPTION:
 :: =       :: =   Blah blah blah..
 :: =       :: =   And this !VARIABLE! gets expanded as well.
-:: =
+::
 :: = PARAMETERS
-:: =   paht-to-script  Path to script.
+:: =   path-to-script  Path to script.
+:: =
+:: = EXAMPLE
+:: =   Assume a script, count.cmd, with the following content:
+:: =
+:: =   ,---------------------------------------------------.
+:: =   | @echo off                                         |
+:: =   | :main /? | number                                 |
+:: =   |                                                   |
+:: =   | :: = This is a small script to count from 1 - n.  |
+:: =   |                                                   |
+:: =   | if "%~1" == "/?" call cl_help "%~f0" & goto :EOF  |
+:: =   | for /L %%N in (1,1,%~1) do echo %%I               |
+:: =   '---------------------------------------------------'
+:: =
+:: =   Invoking the script with
+:: =
+:: =     C:> count /?
+:: =
+:: =   will produce the help-text
+:: =
+:: =   ,---------------------------------------------------.
+:: =   | NAME                                              |
+:: =   |   count                                           |
+:: =   |                                                   |
+:: =   | SYNOPSIS                                          |
+:: =   |   count /? | number                               |
+:: =   |                                                   |
+:: =   | This is a small script to count from 1 - n.       |
+:: =   '---------------------------------------------------'
+:: =
+:: = SEE ALSO
+:: =   cl_usage
 :: =
 :: = AUTHOR
 :: =   Jan Bruun Andersen
