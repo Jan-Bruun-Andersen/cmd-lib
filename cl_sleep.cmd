@@ -4,6 +4,12 @@
 :: =   Sleeps for X seconds (default is 2 seconds).
 :: =   The optional message is printed just before the sleeping starts.
 :: =
+:: = EXAMPLE
+:: =   ,---------------------------------------------------.
+:: =   | @echo off                                         |
+:: =   | call cl_sleep 10 Sleeping for 10 seconds.         |
+:: =   '---------------------------------------------------'
+:: =
 :: = AUTHOR
 :: =   Jan Bruun Andersen
 :: =
