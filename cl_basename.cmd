@@ -10,6 +10,14 @@
 :: = GLOBAL VARIABLES
 :: =   _basename = the basename.
 :: =
+:: = EXAMPLE
+:: =   ,---------------------------------------------------.
+:: =   | @echo off                                         |
+:: =   | echo Full path is: "%~f0"                         |
+:: =   | call cl_basename "%~f0" .cmd                      |
+:: =   | echo Basename ^(without .cmd^) is "%_basename%"   |
+:: =   '---------------------------------------------------'
+:: =
 :: = SEE ALSO
 :: =   cl_stripexts
 :: =   The built-in CALL command and the %~n1 parameter substitution syntax.
@@ -17,11 +25,8 @@
 :: = AUTHOR
 :: =   Jan Bruun Andersen
 :: =
-:: = AUTHOR
-:: =   Jan Bruun Andersen
-:: =
 :: = VERSION
-:: =   2015-12-01
+:: =   2015-12-02
 
     time >NUL: /t
     set "_basename="
