@@ -1,33 +1,19 @@
-:cl_init path
+:cl_die [error-level [error-message...]]
 
 :: = DESCRIPTION
-:: =   Initialised cmd-lib.
-:: =
-:: = PARAMETERS
-:: =  path  full path off calling script.
-:: =
-:: = GLOBAL VARIABLES
-:: =   PROG_FULL = Full path to calling script. Set by cl_init.
-:: =   PROG_NAME = Name of calling script.      Set by cl_init.
-:: =   PROG_DIR  = Directory of calling script. Set by cl_init.
-:: =
-:: = EXAMPLE
-:: =   ,---------------------------------------------------.
-:: =   | @echo off                                         |
-:: =   | call cl_init "%~f0"
-:: =   | echo My full path is: "%PROG_FULL%
-:: =   | echo My name is:      "%PROG_NAME%
-:: =   | echo My directory is: "%PROG_DIR%
-:: =   '---------------------------------------------------'
+:: =   Emits an optional error message, then sets ErrorLevel and exit-status.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
-    set "PROG_FULL=%~f1"
-    set "PROG_NAME=%~n1"
-    set "PROG_DIR=%~dp1"
+    if not "%~2" == "" echo %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
+    call :errlevel %~1
 
     goto :exit
+goto :EOF
+
+:errlevel error-level
+    exit /b %~1
 goto :EOF
 
 rem ----------------------------------------------------------------------------

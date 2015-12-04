@@ -1,34 +1,45 @@
-:cl_abspath path
+:cl_pack_7z [/v] path-to-7z archive file-glob
 
 :: = DESCRIPTION
-:: =   Returns the absolute path of a (relative) path-name.
+:: =   Packs (adds) files an archive.
+:: =
+:: = OPTIONS
+:: =   /v          Be verbose.
 :: =
 :: = PARAMETERS
-:: =   path  pathname to get the absolute path from.
-:: =
-:: = GLOBAL VARIABLES
-:: =   _abspath = the absolute path.
+:: =   path-to-7z   Path to the 7z program.
+:: =   archive      Name of arhive file.
+:: =   glob         Name of file(s) to archive.
 :: =
 :: = EXAMPLE
-:: =   ,---------------------------------------------------.
-:: =   | @echo off                                         |
-:: =   | echo Local path is: "."                           |
-:: =   | call cl_abspath "."                               |
-:: =   | echo Absolute path is "%_abspath%".               |
-:: =   '---------------------------------------------------'
+:: =   ,-----------------------------------------------------.
+:: =   | @echo off                                           |
+:: =   | call cl_pack_7z "C:\Programs\7z\7z.exe" files.zip * |
+:: =   '-----------------------------------------------------'
 :: =
 :: = SEE ALSO
-:: =   The built-in CALL command and the %~f1 parameter substitution syntax.
+:: =   cl_unpack_7z
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
-    time >NUL: /t & rem Set ErrorLevel = 0.
-    set "_abspath="
+    setlocal
 
-    if "%~1" == "" echo>&2 Error in function 'cmd_lib.lib:%0'. Parameter 1 ^(path^) is null & goto :error_exit
+    set "v_nul=>NUL:"
+    set "type="
 
-    set "_abspath=%~f1
+    if /i "%~1" == "/v" set "v_nul=" & shift
+
+    set "type=%~x2"
+    if "%type%" == "" (set type=7z) else (set type=%type:~1%)
+
+    rem Options used with 7z:
+    rem
+    rem   a         (a)dd files to archive.
+    rem   -bb[0-3]  Set output log level.
+    rem   -t{type}  Set archive type.
+
+    "%~1" a -bb1 -t%type% "%~2" "%~3" %v_nul%
     goto :exit
 goto :EOF
 

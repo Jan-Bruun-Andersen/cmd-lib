@@ -4,13 +4,11 @@
 :: =   Displays a selection of variables.
 :: =   Very handy when debugging.
 :: =
-:: = AUTHOR
-:: =   Jan Bruun Andersen
-:: =
-:: = VERSION
-:: =   2015-12-01
+:: = GLOBAL VARIABLES
+:: =   tmp_dir = path to temporary directory for calling script.
 
-    if "%~1" == "" %0 .
+:: @author Jan Bruun Andersen
+:: @version @(#) Version: 2015-12-05
 
     echo =======
     echo cwd            = "%CD%"
@@ -21,13 +19,13 @@
     echo PROG_NAME      = "%PROG_NAME%"
     echo PROG_CFG       = "%PROG_CFG%"
 
-    if defined tmp_dir if exist %tmp_dir%\ (
+    if defined tmp_dir if exist "%tmp_dir%\" (
 	echo.
-	dir %tmp_dir%
+	dir "%tmp_dir%"
     )
 
     echo =======
 goto :EOF
 
-rem vim: set filetype=dosbatch tabstop=8 softtabstop=4 shiftwidth=4 noexpandtab:
-rem vim: set foldmethod=indent
+:: vim: set filetype=dosbatch tabstop=8 softtabstop=4 shiftwidth=4 noexpandtab:
+:: vim: set foldmethod=indent

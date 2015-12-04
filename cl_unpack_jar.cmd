@@ -1,34 +1,45 @@
-:cl_abspath path
+:cl_unpack_jar [/v] path-to-jar archive [dst-dir]
 
 :: = DESCRIPTION
-:: =   Returns the absolute path of a (relative) path-name.
+:: =   Unpacks an archive.
+:: =
+:: = OPTIONS
+:: =   /v          Be verbose.
 :: =
 :: = PARAMETERS
-:: =   path  pathname to get the absolute path from.
-:: =
-:: = GLOBAL VARIABLES
-:: =   _abspath = the absolute path.
+:: =   path-to-jar  Path to the jar program.
+:: =   archive      Name of arhive file.
+:: =   dst-dir      Name of directory where the files will be placed.
 :: =
 :: = EXAMPLE
-:: =   ,---------------------------------------------------.
-:: =   | @echo off                                         |
-:: =   | echo Local path is: "."                           |
-:: =   | call cl_abspath "."                               |
-:: =   | echo Absolute path is "%_abspath%".               |
-:: =   '---------------------------------------------------'
+:: =   ,-----------------------------------------------------.
+:: =   | @echo off                                           |
+:: =   | call cl_unpack_jar "C:\Java\bin\jar.exe" files.zip  |
+:: =   '-----------------------------------------------------'
 :: =
 :: = SEE ALSO
-:: =   The built-in CALL command and the %~f1 parameter substitution syntax.
+:: =   cl_pack_jar
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
-    time >NUL: /t & rem Set ErrorLevel = 0.
-    set "_abspath="
+    setlocal
 
-    if "%~1" == "" echo>&2 Error in function 'cmd_lib.lib:%0'. Parameter 1 ^(path^) is null & goto :error_exit
+    set "v_opt="
+    set "dir=."
 
-    set "_abspath=%~f1
+    if /i "%~1" == "/v" set "v_opt=v" & shift
+
+    if not "%~3" == "" set "dir=%~3"
+
+    rem Options used with jar:
+    rem
+    rem   x  E(x)tract from archive.
+    rem   v  Be (v)erbose.
+    rem   f  Name of archive (f)ile to unpack.
+
+    pushd "%dir%"
+    "%~1" x%v_opt%f "%~2"
     goto :exit
 goto :EOF
 
