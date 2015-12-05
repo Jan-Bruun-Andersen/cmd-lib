@@ -33,7 +33,8 @@
     set "verbosity=0"
     set "dry_run=false"
     set "dst_dir="
-    set "DRY_CMD=ECHO"
+    set "cnt_mkdir=0"
+    set "cnt_copy=0"
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift		& goto :getopts
@@ -78,13 +79,32 @@
     rem | This is where the real fun begins!
     rem '----------------------------------------------------------------------
 
-    if not exist "%dst_dir%" %DRY_CMD% mkdir "%dst_dir%" || goto :exit
+    if not exist "%dst_dir%"   call :mkdir "%dst_dir%"	    || goto :exit
+    for %%F in (README.md)  do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (LICENSE)    do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (src\*.cmd)  do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (src\*.tmpl) do call :copy "%%F" "%dst_dir%" || goto :exit
 
-    for %%F in (src/*,cmd) do (
-	%DRY_CMD% copy "%%F" "%dst_dir%"
-    )
+    if 0%cnt_mkdir% gtr 0 echo Directories created: %cnt_mkdir%
+    if 0%cnt_copy%  gtr 0 echo Files copied:        %cnt_copy%
 
     goto :exit
+goto :EOF
+
+:mkdir dir
+    if "%dry_run%" == "true" echo mkdir "%~1" & goto :EOF
+
+    if 0%verbosity% geq 1 echo Creating directory "%~1".
+    mkdir "%~1"
+    set /a "cnt_mkdir+=1"
+goto :EOF
+
+:copy file dst-dir
+    if "%dry_run%" == "true" echo copy "%~1" "%~2" & goto :EOF
+
+    if 0%verbosity% geq 1 echo Copying "%~1" to "%~2".
+    copy "%~1" "%~2" >NUL:
+    set /a "cnt_copy+=1"
 goto :EOF
 
 rem .--------------------------------------------------------------------------
