@@ -10,9 +10,8 @@
 :: =     Name of directory to install cmd-lib in.
 :: =
 :: = OPTIONS
-:: =   /v  Be verbose. Repeat for extra verbosity.
-:: =
-:: =   /n  Dry-run. Do not install, just show commands,
+:: =   /v  Be verbose.
+:: =   /n  Dry-run. Do not install, just show commands.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
