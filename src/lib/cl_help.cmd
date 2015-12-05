@@ -36,7 +36,7 @@
 :: =   | :: = This is a small script to count from 1 - n.  |
 :: =   |                                                   |
 :: =   | :: @author Jan Bruun Andersen                     |
-:: =   | :: @version 2015-12-04                            |
+:: =   | :: @version 2015-12-05                            |
 :: =   |                                                   |
 :: =   | if "%~1" == "/?" call cl_help "%~f0" & goto :EOF  |
 :: =   | for /L %%N in (1,1,%~1) do echo %%I               |
@@ -70,10 +70,15 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
+    if "%~1" == "" echo>&2 Error in function '%0'. Parameter 1 ^(path-to-script^) is null & goto :error_exit
+
     setlocal enabledelayedexpansion
+    time >NUL: /t & rem Set ErrorLevel = 0.
 
     rem If no label-name was specified, default is 'main'.
     if "%~2" == "" call %0 %1 main & goto :EOF
+
+    if not defined PROG_NAME set "PROG_NAME=%~1n"
 
     echo NAME
     echo.  %~n1
