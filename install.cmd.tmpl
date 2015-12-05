@@ -51,8 +51,6 @@
 
     if "%show_help%" == "true" call cl_help "%PROG_FULL%" & goto :EOF
 
-    set "dst_dir=%~1" & shift
-
     if not "%~1" == "" (
 	echo Extra argument - %1.
 	echo.
