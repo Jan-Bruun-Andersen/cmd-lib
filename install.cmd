@@ -1,6 +1,6 @@
 @   echo off
 
-:main /? | [/v] [/n] dest-dir
+:main /? | [/v] [/n] [/extras] dest-dir
 
 :: = DESCRIPTION
 :: =   !PROG_NAME! - installs cmd-lib.
@@ -10,8 +10,9 @@
 :: =     Name of directory to install cmd-lib in.
 :: =
 :: = OPTIONS
-:: =   /v  Be verbose.
-:: =   /n  Dry-run. Do not install, just show commands.
+:: =   /v       Be verbose. Repeat for extra verbosity.
+:: =   /n       Dry-run. Do not install, just show commands.
+:: =   /extras  Installs a few utilities that uses cmd-lib.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
@@ -23,7 +24,7 @@
 	goto :EOF
     )
 
-    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" PATH %~dp0\src;%PATH%
+    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" PATH %~dp0\src\lib;%PATH%
     call cl_init "%~f0" "%~1" || (echo Failed to initialise cmd-lib. & goto :exit)
     if /i "%~1" == "/trace" shift & prompt $G$G & echo on
 
@@ -31,6 +32,7 @@
     set "show_help=false"
     set "verbosity=0"
     set "dry_run=false"
+    set "extras=false"
     set "dst_dir="
     set "cnt_mkdir=0"
     set "cnt_copy=0"
@@ -40,6 +42,7 @@
 
     if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift		& goto :getopts
     if /i "%~1" == "/n"		set "dry_run=true"	& shift		& goto :getopts
+    if /i "%~1" == "/extras"	set "extras=true"	& shift		& goto :getopts
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
@@ -68,9 +71,10 @@
 	goto :error_exit
     )
 
-    if 0%verbosity% geq 1 (
-	echo dest-dir     = %dst_dir%
-	echo dry-run      = %dry_run%
+    if 0%verbosity% geq 2 (
+	echo dest-dir = %dst_dir%
+	echo dry-run  = %dry_run%
+	echo extras   = %extras%
 	echo.
     )
 
@@ -78,11 +82,16 @@
     rem | This is where the real fun begins!
     rem '----------------------------------------------------------------------
 
-    if not exist "%dst_dir%"   call :mkdir "%dst_dir%"	    || goto :exit
-    for %%F in (README.md)  do call :copy "%%F" "%dst_dir%" || goto :exit
-    for %%F in (LICENSE)    do call :copy "%%F" "%dst_dir%" || goto :exit
-    for %%F in (src\*.cmd)  do call :copy "%%F" "%dst_dir%" || goto :exit
-    for %%F in (src\*.tmpl) do call :copy "%%F" "%dst_dir%" || goto :exit
+    if not exist "%dst_dir%"	       call :mkdir "%dst_dir%"	    || goto :exit
+
+    for %%F in (README.md)	    do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (LICENSE)	    do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (src\lib\cl_*.cmd)   do call :copy "%%F" "%dst_dir%" || goto :exit
+    for %%F in (src\*.tmpl)	    do call :copy "%%F" "%dst_dir%" || goto :exit
+
+    if "%extras%" == "true" (
+    for %%F in (src\cmd\*.cmd)	    do call :copy "%%F" "%dst_dir%" || goto :exit
+    )
 
     if 0%cnt_mkdir% gtr 0 echo Directories created: %cnt_mkdir%
     if 0%cnt_copy%  gtr 0 echo Files copied:        %cnt_copy%
@@ -94,16 +103,22 @@ goto :EOF
     if "%dry_run%" == "true" echo mkdir "%~1" & goto :EOF
 
     if 0%verbosity% geq 1 echo Creating directory "%~1".
-    mkdir "%~1"
-    set /a "cnt_mkdir+=1"
+    mkdir "%~1" && (
+	set /a "cnt_mkdir+=1"
+    )
 goto :EOF
 
 :copy file dst-dir
     if "%dry_run%" == "true" echo copy "%~1" "%~2" & goto :EOF
 
     if 0%verbosity% geq 1 echo Copying "%~1" to "%~2".
-    copy "%~1" "%~2" >NUL:
-    set /a "cnt_copy+=1"
+    copy "%~1" "%~2" >NUL: && (
+	set /a "cnt_copy+=1"
+    ) || (
+	echo ERROR - Failed to copy "%~1" to "%~2".
+	copy "%~1" "%~2"
+	goto :exit
+    ) >&2
 goto :EOF
 
 rem .--------------------------------------------------------------------------

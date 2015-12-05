@@ -7,6 +7,8 @@
 :: =  path  full path off calling script.
 :: =
 :: = GLOBAL VARIABLES
+:: =   cl_init   = Indicates if cmd-lib have already been initialized.
+:: =               Set to true by cl_init.
 :: =   PROG_FULL = Full path to calling script. Set by cl_init.
 :: =   PROG_NAME = Name of calling script.      Set by cl_init.
 :: =   PROG_DIR  = Directory of calling script. Set by cl_init.
@@ -14,19 +16,22 @@
 :: = EXAMPLE
 :: =   ,---------------------------------------------------.
 :: =   | @echo off                                         |
-:: =   | call cl_init "%~f0"
-:: =   | echo My full path is: "%PROG_FULL%
-:: =   | echo My name is:      "%PROG_NAME%
-:: =   | echo My directory is: "%PROG_DIR%
+:: =   | call cl_init "%~f0"                               |
+:: =   | echo My full path is: "%PROG_FULL%                |
+:: =   | echo My name is:      "%PROG_NAME%                |
+:: =   | echo My directory is: "%PROG_DIR%                 |
 :: =   '---------------------------------------------------'
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
+    if "%cl_init%" == "true" goto :no_error
+
     set "PROG_FULL=%~f1"
     set "PROG_NAME=%~n1"
     set "PROG_DIR=%~dp1"
 
+    set "cl_init=true"
     goto :exit
 goto :EOF
 
