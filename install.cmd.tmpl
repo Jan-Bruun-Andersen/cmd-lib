@@ -8,7 +8,7 @@
 :: = OPTIONS
 :: =   /v       Be verbose. Repeat for extra verbosity.
 :: =   /n       Dry-run. Do not install, just show commands.
-:: =   /extras  Installs a few utilities that uses cmd-lib.
+:: =   /extras  Install a few utilities that uses cmd-lib.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
@@ -29,6 +29,7 @@
     set "verbosity=0"
     set "dry_run=false"
     set "extras=false"
+
     set "dst_dir=@DST_DIR@"
     set "cnt_mkdir=0"
     set "cnt_copy=0"
@@ -68,7 +69,8 @@
     if 0%verbosity% geq 2 (
 	echo dst-dir = %dst_dir%
 	echo dry-run = %dry_run%
-	echo extras   = %extras%
+	echo extras  = %extras%
+	echo action  = %action%
 	echo.
     )
 
