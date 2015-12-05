@@ -1,11 +1,15 @@
-Installation is pretty straightforward. Just run `install.cmd` with the name of
-the directory where you want the cmd-lib utilites installed.
+Installation is pretty straightforward:
 
-Personally, I put all my scripts and stuff in %UserProfile%\LocalTools. I also
-like to keep the cmd-lib scripts in their own little directory called `cmd-lib.lib`,
-so I use a command like this to install it all:
+1. `configure`
+2. `install`
 
-    C:> install "%UserProfile%\LocalTools\cmd-lib.lib"
+By default, `configure` will prepare cmd-lib to be installed in
+
+    %UserProfile%\LocalTools\cmd-lib.lib
+
+If you want to install them somewhere else, run `configure` with the `/prefix`
+option, e.g. `configure /prefix "%AppData%\Local\Programs\cmd-lib", before
+running `install`.
 
 The installer supports a couple of options:
 

@@ -1,13 +1,13 @@
 @   echo off
 
-:main /? | [prefix]
+:main /? | [/prefix directory]
 
 :: = DESCRIPTION
 :: =   !PROG_NAME! - configures cmd-lib.
 :: =
-:: = PARAMETERS
-:: =   dest-dir
-:: =     Name of directory to install cmd-lib in.
+:: = OPTIONS
+:: =   /prefix  Name of directory to install cmd-lib in.
+:: =            Default is !prefix!.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
@@ -25,10 +25,12 @@
 
 :defaults
     set "show_help=false"
-    set "prefix=%UserProfile%\LocalTools"
+    set "prefix=%UserProfile%\LocalTools\cmd-lib.lib"
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift		& goto :getopts
+
+    if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift & shift	& goto :getopts
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
@@ -41,7 +43,7 @@
 
     if "%show_help%" == "true" call cl_help "%PROG_FULL%" & goto :EOF
 
-    set "prefix=%~1" & shift
+    if not "%~1" == "" set "prefix=%~1" & shift
 
     if not "%~1" == "" (
 	echo Extra argument - %1.
@@ -107,7 +109,6 @@ goto :EOF
 	if defined token6 set "I=!I:@%token6%@=%value6%!"
 	echo.!I!>>"%out_file%"
     )
-diff -Bb "%in_file%" "%out_file%"
     endlocal
 goto :EOF
 
