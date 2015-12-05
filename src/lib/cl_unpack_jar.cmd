@@ -23,7 +23,11 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
+    if "%~1" == "" echo>&2 Error in function '%0'. Parameter 1 ^(path-to-jar^) is null	& goto :error_exit
+    if "%~2" == "" echo>&2 Error in function '%0'. Parameter 2 ^(archive) is null	& goto :error_exit
+
     setlocal
+    time >NUL: /t & rem Set ErrorLevel = 0.
 
     set "v_opt="
     set "dir=."

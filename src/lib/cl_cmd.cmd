@@ -37,6 +37,8 @@
     if /i "%~1" == "/ding"	set "cl_cmd_post=%cl_cmd_post% ^& echo>&2 "   & shift & goto :getopts
     if /i "%~1" == "/pause"	set "cl_cmd_post=%cl_cmd_post% ^& pause"	& shift & goto :getopts
 
+    if "%~1" == "" echo>&2 Error in function '%0'. Parameter 1 ^(command^) is null & goto :error_exit
+
     set "cl_cmd_wtitle=%~1 %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9"
 
     if 0%verbosity% geq 2 (echo Title:       %cl_cmd_wtitle%)

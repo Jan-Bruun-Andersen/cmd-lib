@@ -26,7 +26,7 @@
     time >NUL: /t & rem Set ErrorLevel = 0.
     set "_dirname="
 
-    if "%~1" == "" echo>&2 Error in function 'cmd_lib.lib:%0'. Parameter 1 ^(path^) is null & goto :error_exit
+    if "%~1" == "" echo>&2 Error in function '%0'. Parameter 1 ^(path^) is null & goto :error_exit
 
     set "_dirname=%~dp1"
     goto :exit

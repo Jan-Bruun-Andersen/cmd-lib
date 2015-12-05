@@ -40,7 +40,10 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
+    if "%~1" == "" echo>&2 Error in function '%0'. Parameter 1 ^(path-to-script^) is null & goto :error_exit
     if "%~2" == "" call %0 %1 main & goto :EOF
+
+    time >NUL: /t & rem Set ErrorLevel = 0.
 
     for /F "tokens=1,*" %%I in ('findstr /R "^:%~2" "%~1"') do echo Usage: %~n1 %%J
     goto :no_error
