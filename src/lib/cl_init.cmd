@@ -4,7 +4,7 @@
 :: =   Initialised cmd-lib.
 :: =
 :: = PARAMETERS
-:: =  path  full path off calling script.
+:: =   path  full path off calling script.
 :: =
 :: = GLOBAL VARIABLES
 :: =   cl_init   = Indicates if cmd-lib have already been initialized.
