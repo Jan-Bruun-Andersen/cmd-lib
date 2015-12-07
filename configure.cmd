@@ -38,7 +38,7 @@
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
 
     if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift /1		& goto :getopts
-    if /i "%~1" == "/clean"	set "action=clean"	& shift	/1		& goto :getopts
+    if /i "%~1" == "/clean"	set "action=clean"	& shift /1		& goto :getopts
     if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift /1 & shift /1	& goto :getopts
 
     rem cl_init needs to be here, after setting 'cmdlib'.
