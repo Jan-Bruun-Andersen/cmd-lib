@@ -84,7 +84,7 @@
 
     goto :%action%
 :configure
-    call cl_token_subst install.cmd.tmpl install.cmd PROG_NAME=install DST_DIR="%prefix%" CMD_LIB="%cmdlib%"
+    call cl_token_subst install.cmd.tmpl install.cmd PACKAGE=%cfg_PACKAGE% DST_DIR="%prefix%" CMD_LIB="%cmdlib%"
     goto :exit
 :clean
     for %%F in (install.cmd) do (
