@@ -6,7 +6,7 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-05
 
-    if not "%~2" == "" echo %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
+    if not "%~2" == "" echo>&2 %~2 %~3 %~4 %~5 %~6 %~7 %~8 %~9
     call :errlevel %~1
 
     goto :exit
