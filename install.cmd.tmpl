@@ -1,6 +1,6 @@
 @   echo off
 
-:main /? | [/v] [/n] [/extras] [prefix directory] [/cmd-lib directory]
+:main /? | [/v] [/n] [prefix directory] [/cmd-lib directory] [/extras]
 
 :: = DESCRIPTION
 :: =   ^!PROG_NAME^! - installs ^!PACKAGE^!.
@@ -9,7 +9,8 @@
 :: =   /v        Be verbose. Repeat for extra verbosity.
 :: =   /n        Dry-run. Do not install, just show commands.
 :: =   /prefix   Name of directory to install !PACKAGE! in.
-:: =             Default is !prefix!.
+:: =             Default is ^!prefix^!.
+:: =   /extras   Also installs some extra utilities from src\cmd.
 
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-07
@@ -26,14 +27,14 @@
 :defaults
     set "PROG_FULL=%~f0"    & rem PROG_FULL needs to be set here since we will
 			      rem clobber %0 as part of the options processing.
-    set "PACKAGE=cmd-lib"   & rem %0 as part of the options processing.
+    set "PACKAGE=@PACKAGE@"
 
     set "show_help=false"
     set "verbosity=0"
     set "dry_run=false"
-    set "extras=false"
     set "prefix=@DST_DIR@"
     set "cmdlib=@CMD_LIB@"
+    set "extras=false"
 
     set "cnt_mkdir=0"
     set "cnt_copy=0"
@@ -43,9 +44,9 @@
 
     if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift		& goto :getopts
     if /i "%~1" == "/n"		set "dry_run=true"	& shift		& goto :getopts
-    if /i "%~1" == "/extras"	set "extras=true"	& shift		& goto :getopts
     if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift & shift	& goto :getopts
     if /i "%~1" == "/cmd-lib"	set "cmdlib=%~2"	& shift & shift	& goto :getopts
+    if /i "%~1" == "/extras"	set "extras=true"	& shift		& goto :getopts
 
     rem cl_init needs to be here, after setting cmdlib.
     for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cmdlib%;%PATH%"
@@ -78,10 +79,10 @@
 
     if 0%verbosity% geq 2 (
 	echo dry-run = %dry_run%
-	echo extras  = %extras%
 	echo action  = %action%
 	echo prefix  = %prefix%
 	echo cmdlib  = %cmdlib%
+	echo extras  = %extras%
 	echo.
     )
 
@@ -140,9 +141,9 @@ rem '--------------------------------------------------------------------------
     echo show_help      = "%show_help%"
     echo verbosity      = "%verbosity%"
     echo dry_run        = "%dry_run%"
-    echo extras         = "%extras%"
-    echo prefix        = "%prefix%"
+    echo prefix         = "%prefix%"
     echo cmdlib         = "%cmdlib%"
+    echo extras         = "%extras%"
 
     echo cnt_mkdir      = "%cnt_mkdir%"
     echo cnt_copy       = "%cnt_copy%"
