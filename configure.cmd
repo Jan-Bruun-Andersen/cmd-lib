@@ -28,9 +28,10 @@
     set "verbosity=0"
     set "prefix=%UserProfile%\LocalTools\cmd-lib.lib"
     set "cmdlib=src\lib"
-    set "action=configure"
+    set "action=subst"
 
-    if exist "configure.dat" call :read_cfg "configure.dat"
+    set "PROG_CFG=%~dpn0.dat"
+    call :read_cfg "%PROG_CFG%" PACKAGE || goto :error_exit
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
@@ -69,10 +70,10 @@
     )
 
     if 0%verbosity% geq 2 (
-	echo action  = %action%
-	echo prefix  = %prefix%
-	echo cmdlib  = %cmdlib%
-	echo.
+	echo action      = "%action%"
+	echo prefix      = "%prefix%"
+	echo cmdlib      = "%cmdlib%"
+	call :dump_cfg 11
     )
 
     rem .----------------------------------------------------------------------
@@ -94,19 +95,49 @@ rem | assignments, e.g.
 rem |
 rem |   PACKAGE=cmd-lib
 rem |
-rem | The following values may be defined:
-rem |
-rem |   PACKAGE         Name of package being configured/installed.
-rem |
 rem | Each value will be assigned to a variable named cfg_<NAME>.
-rem | Anything else will (hopefully) be silently ignored!
+rem |
+rem | @param config-file  Name of configuration file.
+rem | @param req-value    Name of required configuration values.
 rem '--------------------------------------------------------------------------
-:read_cfg
-    if exist "%~1" (
-        for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (
-            if /i "%%V" == "PACKAGE"    set cfg_%%V=%%W
-        )
+:read_cfg config-file [req-value ...]
+    if not exist "%~1" (
+	echo>&2 ERROR - Configuration file "%~1" not found.
+	exit /b 1
     )
+
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do set cfg_%%V=%%W
+
+    for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
+	if not defined cfg_%%V (
+	    echo>&2 ERROR - Configuration value "%%V" is missing. Check "%~1".
+	    exit /b 1
+	)
+    )
+goto :EOF
+
+rem .--------------------------------------------------------------------------
+rem | Displays configuration values (variables with prefix 'cfg_') in two
+rem | columns:
+rem |
+rem |   cfg_VARNAME    = "variable-value"
+rem |
+rem | @param column1-size  Max size of name column.
+rem '--------------------------------------------------------------------------
+:dump_cfg column1-size
+    setlocal EnableDelayedExpansion
+
+    set csize=%~1
+
+    set "rpad="
+    for /L %%L in (1,1,%csize%) do set "rpad=!rpad! "
+
+    for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
+	set "V=%%V%rpad%"
+	set "V=!V:~0,%csize%!
+	echo !V! = "%%W"
+    )
+    endlocal
 goto :EOF
 
 rem .--------------------------------------------------------------------------
@@ -124,13 +155,7 @@ rem '--------------------------------------------------------------------------
     echo prefix         = "%prefix%"
     echo cmdlib         = "%cmdlib%"
 
-    setlocal enabledelayedexpansion
-    for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
-	set "V=%%V          "
-	set "V=!V:~0,14!
-	echo !V! = "%%W"
-    )
-    endlocal
+    call :dump_cfg 14
 
     if defined tmp_dir if exist "%tmp_dir%\" (
 	echo.
