@@ -32,6 +32,7 @@
 
     set "PROG_CFG=%~dpn0.dat"
     call :read_cfg "%PROG_CFG%" PACKAGE || goto :error_exit
+    set "template_files=install.cmd.tmpl"
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
@@ -80,9 +81,34 @@
     rem | This is where the real fun begins!
     rem '----------------------------------------------------------------------
 
-    goto :%action%
-:configure
-    call cl_token_subst install.cmd.tmpl install.cmd PACKAGE=%cfg_PACKAGE% DST_DIR="%prefix%" CMD_LIB="%cmdlib%"
+    goto :do_%action%
+    :do_subst
+	setlocal EnableDelayedExpansion
+	for %%T in (%template_files%) do (
+	    call cl_basename %%T .tmpl
+	    set "real_file=!_basename!"
+	    if 0%verbosity% geq 1 echo Creating "!real_file!" from "%%T".
+	    call cl_token_subst "%%T" "!real_file!" ^
+		PACKAGE=%cfg_PACKAGE% ^
+		DST_DIR="%prefix%" ^
+		CMD_LIB="%cmdlib%"
+	)
+	endlocal
+	goto :done
+    :do_clean
+	setlocal EnableDelayedExpansion
+	for %%T in (%template_files%) do (
+	    call cl_basename %%T .tmpl
+	    set "real_file=!_basename!"
+	    if exist "!real_file!" (
+		if 0%verbosity% geq 1 echo Deleting "!real_file!".
+		del "!real_file!"
+	    )
+	)
+	endlocal
+	goto :done
+    :done
+
     goto :exit
 goto :EOF
 
