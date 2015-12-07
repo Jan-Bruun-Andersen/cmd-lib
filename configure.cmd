@@ -21,12 +21,9 @@
 	goto :EOF
     )
 
-    if /i "%~1" == "/trace" shift & prompt $G$G & echo on
+    if /i "%~1" == "/trace" shift /1 & prompt $G$G & echo on
 
 :defaults
-    set "PROG_FULL=%~f0"    & rem PROG_FULL needs to be set here since we will
-			      rem clobber %0 as part of the options processing.
-
     set "show_help=false"
     set "verbosity=0"
     set "prefix=%UserProfile%\LocalTools\cmd-lib.lib"
@@ -36,15 +33,15 @@
     if exist "configure.dat" call :read_cfg "configure.dat"
 
 :getopts
-    if /i "%~1" == "/?"		set "show_help=true"	& shift		& goto :getopts
+    if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
 
-    if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift		& goto :getopts
-    if /i "%~1" == "/clean"	set "action=clean"	& shift		& goto :getopts
-    if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift & shift	& goto :getopts
+    if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift /1		& goto :getopts
+    if /i "%~1" == "/clean"	set "action=clean"	& shift	/1		& goto :getopts
+    if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift /1 & shift /1	& goto :getopts
 
-    rem cl_init needs to be here, after setting cmdlib.
+    rem cl_init needs to be here, after setting 'cmdlib'.
     for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cmdlib%;%PATH%"
-    call cl_init "%PROG_FULL%" || (echo Failed to initialise cmd-lib. & goto :exit)
+    call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
@@ -85,12 +82,6 @@
     goto :%action%
 :configure
     call cl_token_subst install.cmd.tmpl install.cmd PACKAGE=%cfg_PACKAGE% DST_DIR="%prefix%" CMD_LIB="%cmdlib%"
-    goto :exit
-:clean
-    for %%F in (install.cmd) do (
-	if 0%verbosity% geq 1 echo Deleting %%F.
-	if exist "%%F" del "%%F"
-    )
     goto :exit
 goto :EOF
 
