@@ -12,7 +12,7 @@
 :: =             Default is !prefix!.
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-05
+:: @version @(#) Version: 2015-12-07
 
     verify 2>NUL: other
     setlocal EnableExtensions
