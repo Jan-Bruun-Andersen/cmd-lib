@@ -30,10 +30,10 @@
 :: = BUGS
 :: =   An unfortunate short-coming of cl_token_subst is that anything that
 :: =   looks like delayed-expansion variables (e.g. !variable!) will also be
-:: =   substituted/expanded.
+:: =   substituted/expanded. A work-around is to replace every ! with ^!.
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-05
+:: @version @(#) Version: 2015-12-07
 
     setlocal EnableDelayedExpansion
     time >NUL: /t & rem Set ErrorLevel = 0.
@@ -80,16 +80,18 @@
 
     if exist "%out_file%" del "%out_file%"
 
-    for /F "usebackq delims=" %%I in (`type "%in_file%"`) do (
-	set "I=%%I"
-	if defined token1 set "I=!I:%delim1%%token1%%delim2%=%value1%!"
-	if defined token2 set "I=!I:%delim1%%token2%%delim2%=%value2%!"
-	if defined token3 set "I=!I:%delim1%%token3%%delim2%=%value3%!"
-	if defined token4 set "I=!I:%delim1%%token4%%delim2%=%value4%!"
-	if defined token5 set "I=!I:%delim1%%token5%%delim2%=%value5%!"
-	if defined token6 set "I=!I:%delim1%%token6%%delim2%=%value6%!"
-	echo.!I!>>"%out_file%"
+    for /F "usebackq delims= tokens=1" %%I in (`findstr /n /r ".*" "%in_file%"`) do (
+	set "S=I%%I"
+	if defined token1 set "S=!S:%delim1%%token1%%delim2%=%value1%!"
+	if defined token2 set "S=!S:%delim1%%token2%%delim2%=%value2%!"
+	if defined token3 set "S=!S:%delim1%%token3%%delim2%=%value3%!"
+	if defined token4 set "S=!S:%delim1%%token4%%delim2%=%value4%!"
+	if defined token5 set "S=!S:%delim1%%token5%%delim2%=%value5%!"
+	if defined token6 set "S=!S:%delim1%%token6%%delim2%=%value6%!"
+	set "S=!S:*:=!"
+	echo.!S!>>"%out_file%"
     )
+
     if not exist "%out_file%" goto :error_exit
     endlocal
     goto :exit
