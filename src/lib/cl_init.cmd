@@ -7,11 +7,15 @@
 :: =   path  full path off calling script.
 :: =
 :: = GLOBAL VARIABLES
-:: =   cl_init   = Indicates if cmd-lib have already been initialized.
+:: =   PROG_FULL   Full path to calling script. Set by cl_init.
+:: =   PROG_NAME   Name of calling script.      Set by cl_init.
+:: =   PROG_DIR    Directory of calling script. Set by cl_init.
+:: =
+:: =   tmp_dir     Name of temporary directory.
+:: =               Cleared by cl_init.
+:: =
+:: =   cl_init     Indicates if cmd-lib have already been initialized.
 :: =               Set to true by cl_init.
-:: =   PROG_FULL = Full path to calling script. Set by cl_init.
-:: =   PROG_NAME = Name of calling script.      Set by cl_init.
-:: =   PROG_DIR  = Directory of calling script. Set by cl_init.
 :: =
 :: = EXAMPLE
 :: =   ,---------------------------------------------------.
@@ -31,6 +35,7 @@
     set "PROG_NAME=%~n1"
     set "PROG_DIR=%~dp1"
 
+    set "tmp_dir="
     set "cl_init=true"
     goto :exit
 goto :EOF
