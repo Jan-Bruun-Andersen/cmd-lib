@@ -23,7 +23,7 @@
 :: =   '---------------------------------------------------'
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-05
+:: @version @(#) Version: 2015-12-08
 
     setlocal
     time >NUL: /t & rem Set ErrorLevel = 0.
@@ -44,7 +44,7 @@
     if 0%verbosity% geq 2 (echo Title:       %cl_cmd_wtitle%)
     if 0%verbosity% geq 1 (echo Directory:   %CD%)
     if 0%verbosity% geq 1 (echo Command:     %ComSpec% %cl_cmd_opts%)
-    if 0%verbosity% geq 1 (echo.             %1 %2 %3 %4 %5 %6 %7 %8 %9 %cl_cmd_post%)
+    if 0%verbosity% geq 1 (echo.             %1 %2 %3 %4 %5 %6 %7 %8 %9)
 
     (
     start "%cl_cmd_wtitle%" /i /wait ^
