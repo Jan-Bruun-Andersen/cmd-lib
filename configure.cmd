@@ -12,7 +12,7 @@
 :: =             Default is !prefix!.
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-07
+:: @version @(#) Version: 2015-12-08
 
     verify 2>NUL: other
     setlocal EnableExtensions
@@ -26,23 +26,23 @@
 :defaults
     set "show_help=false"
     set "verbosity=0"
-    set "prefix=%UserProfile%\LocalTools\cmd-lib.lib"
-    set "cmdlib=src\lib"
-    set "action=subst"
+    set "action=configure"
 
     set "PROG_CFG=%~dpn0.dat"
-    call :read_cfg "%PROG_CFG%" PACKAGE || goto :error_exit
-    set "template_files=install.cmd.tmpl"
+    call :read_cfg "%PROG_CFG%" ^
+	PACKAGE   ^
+	prefix    ^
+	templates || goto :error_exit
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
 
     if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift /1		& goto :getopts
     if /i "%~1" == "/clean"	set "action=clean"	& shift /1		& goto :getopts
-    if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift /1 & shift /1	& goto :getopts
+    if /i "%~1" == "/prefix"	set "cfg_prefix=%~2"	& shift /1 & shift /1	& goto :getopts
 
-    rem cl_init needs to be here, after setting 'cmdlib'.
-    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cmdlib%;%PATH%"
+    rem cl_init needs to be here, after setting 'cfg_cmdlib'.
+    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cfg_cmdlib%;%PATH%"
     call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
 
     set "char1=%~1"
@@ -63,7 +63,7 @@
 	goto :error_exit
     )
 
-    if not defined prefix (
+    if not defined cfg_prefix (
 	echo /prefix directory not defined.
 	echo.
     	call cl_usage "%PROG_FULL%"
@@ -72,44 +72,52 @@
 
     if 0%verbosity% geq 2 (
 	echo action      = "%action%"
-	echo prefix      = "%prefix%"
-	echo cmdlib      = "%cmdlib%"
 	call :dump_cfg 11
+	echo.
     )
 
     rem .----------------------------------------------------------------------
     rem | This is where the real fun begins!
     rem '----------------------------------------------------------------------
 
-    goto :do_%action%
-    :do_subst
-	setlocal EnableDelayedExpansion
-	for %%T in (%template_files%) do (
-	    call cl_basename %%T .tmpl
-	    set "real_file=!_basename!"
-	    if 0%verbosity% geq 1 echo Creating "!real_file!" from "%%T".
-	    call cl_token_subst "%%T" "!real_file!" ^
-		PACKAGE=%cfg_PACKAGE% ^
-		DST_DIR="%prefix%" ^
-		CMD_LIB="%cmdlib%"
-	)
-	endlocal
-	goto :done
-    :do_clean
-	setlocal EnableDelayedExpansion
-	for %%T in (%template_files%) do (
-	    call cl_basename %%T .tmpl
-	    set "real_file=!_basename!"
-	    if exist "!real_file!" (
-		if 0%verbosity% geq 1 echo Deleting "!real_file!".
-		del "!real_file!"
-	    )
-	)
-	endlocal
-	goto :done
-    :done
+    call :do_%action%
 
     goto :exit
+goto :EOF
+
+:do_configure
+    for %%T in (%cfg_templates%) do call :do_subst "%%T"
+    xcopy build\install.cmd /y /q >NUL:
+goto :EOF
+
+:do_clean
+    for %%D in ("build") do if exist "%%~D" (
+	if 0%verbosity% geq 1 echo Deleting directory "%%~D".
+	rmdir /s /q "%%~D"
+    )
+
+    for %%F in ("install.cmd") do if exist "%%~F" (
+	if 0%verbosity% geq 1 echo Deleting file "%%~F".
+	del "%%~F"
+    )
+goto :EOF
+
+:do_subst [template-file]
+    setlocal EnableDelayedExpansion
+
+    rem Extract the relative directory name from the template file.
+    set "dir=%~dp1"
+    set "rdir=build\!dir:*%CD%\=!"
+
+    set "out_file=%rdir%%~n1"
+    if 0%verbosity% geq 1 echo Creating "%out_file%" from "%~1".
+    if not exist "%rdir%" mkdir "%rdir%"
+    call cl_token_subst "%~1" "%out_file%" ^
+	PACKAGE=%cfg_PACKAGE%  ^
+	DST_DIR="%cfg_prefix%" ^
+	CMD_LIB="%cfg_cmdlib%"
+
+    endlocal
 goto :EOF
 
 rem .--------------------------------------------------------------------------
@@ -132,7 +140,7 @@ rem '--------------------------------------------------------------------------
 	exit /b 1
     )
 
-    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do set cfg_%%V=%%W
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do call set cfg_%%V=%%W
 
     for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
 	if not defined cfg_%%V (
@@ -146,7 +154,7 @@ rem .--------------------------------------------------------------------------
 rem | Displays configuration values (variables with prefix 'cfg_') in two
 rem | columns:
 rem |
-rem |   cfg_VARNAME    = "variable-value"
+rem |   variable-name = "variable-value"
 rem |
 rem | @param column1-size  Max size of name column.
 rem '--------------------------------------------------------------------------
@@ -160,7 +168,7 @@ rem '--------------------------------------------------------------------------
 
     for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
 	set "V=%%V%rpad%"
-	set "V=!V:~0,%csize%!
+	set "V=!V:~4,%csize%!
 	echo !V! = "%%W"
     )
     endlocal
@@ -178,8 +186,6 @@ rem '--------------------------------------------------------------------------
     echo show_help      = "%show_help%"
     echo verbosity      = "%verbosity%"
     echo action         = "%action%"
-    echo prefix         = "%prefix%"
-    echo cmdlib         = "%cmdlib%"
 
     call :dump_cfg 14
 
