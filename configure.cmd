@@ -29,10 +29,12 @@
     set "action=configure"
 
     set "PROG_CFG=%~dpn0.dat"
-    call :read_cfg "%PROG_CFG%" ^
+    call src\lib\cl_read_cfg /vsub "%PROG_CFG%" ^
 	PACKAGE   ^
 	prefix    ^
 	templates || goto :error_exit
+
+    for %%F in (gsar.exe) do if "" == "%%~$PATH:F" set "PATH=%~dp0\bin;%PATH%"
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
@@ -72,7 +74,7 @@
 
     if 0%verbosity% geq 2 (
 	echo action      = "%action%"
-	call :dump_cfg 11
+	call cl_dump_cfg 11
 	echo.
     )
 
@@ -121,60 +123,6 @@ goto :EOF
 goto :EOF
 
 rem .--------------------------------------------------------------------------
-rem | Reads configuration values and defines configuration variables.
-rem |
-rem | The configuration file is a simple text file, where lines starting
-rem | with a # is treated as a comment. Everything else should be simple
-rem | assignments, e.g.
-rem |
-rem |   PACKAGE=cmd-lib
-rem |
-rem | Each value will be assigned to a variable named cfg_<NAME>.
-rem |
-rem | @param config-file  Name of configuration file.
-rem | @param req-value    Name of required configuration values.
-rem '--------------------------------------------------------------------------
-:read_cfg config-file [req-value ...]
-    if not exist "%~1" (
-	echo>&2 ERROR - Configuration file "%~1" not found.
-	exit /b 1
-    )
-
-    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do call set cfg_%%V=%%W
-
-    for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
-	if not defined cfg_%%V (
-	    echo>&2 ERROR - Configuration value "%%V" is missing. Check "%~1".
-	    exit /b 1
-	)
-    )
-goto :EOF
-
-rem .--------------------------------------------------------------------------
-rem | Displays configuration values (variables with prefix 'cfg_') in two
-rem | columns:
-rem |
-rem |   variable-name = "variable-value"
-rem |
-rem | @param column1-size  Max size of name column.
-rem '--------------------------------------------------------------------------
-:dump_cfg column1-size
-    setlocal EnableDelayedExpansion
-
-    set csize=%~1
-
-    set "rpad="
-    for /L %%L in (1,1,%csize%) do set "rpad=!rpad! "
-
-    for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
-	set "V=%%V%rpad%"
-	set "V=!V:~4,%csize%!
-	echo !V! = "%%W"
-    )
-    endlocal
-goto :EOF
-
-rem .--------------------------------------------------------------------------
 rem | Displays a selection of variables belonging to this script.
 rem | Very handy when debugging.
 rem '--------------------------------------------------------------------------
@@ -187,7 +135,7 @@ rem '--------------------------------------------------------------------------
     echo verbosity      = "%verbosity%"
     echo action         = "%action%"
 
-    call :dump_cfg 14
+    call cl_dump_cfg 14
 
     if defined tmp_dir if exist "%tmp_dir%\" (
 	echo.
