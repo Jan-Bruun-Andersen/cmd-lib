@@ -30,7 +30,7 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-07
 
-    setlocal
+    setlocal DisableDelayedExpansion
     time >NUL: /t & rem Set ErrorLevel = 0.
 
     set "delims=@@"
@@ -71,14 +71,7 @@
 
     if exist "%out_file%" del "%out_file%"
 
-    rem The for-loop ignores and skips empty lines. 'findstr' can be used to add
-    rem a '<line-number>:' to every line of input, ensuring that we get a chance
-    rem to process it.
-
-    for /F "usebackq delims= tokens=1" %%I in (`findstr /n /r ".*" "%in_file%"`) do (
-	set "str=%%I"
-	call :subst
-    )
+    call :subst "%in_file%" "%out_file%"
 
     if not exist "%out_file%" goto :error_exit
     endlocal
@@ -106,35 +99,32 @@ rem ----------------------------------------------------------------------------
     rem Parse remaining arguments as token assignments.
     set n=1
 :z1 while
-    if "%~1" == "" goto :z2
+    if "%~1" == "" goto :EOF
 	set "token_%n%=%~1" & shift
 	set "value_%n%=%~1" & shift
 	set /a n+=1
     goto :z1
-:z2
-    endlocal
 goto :EOF
 
 rem ----------------------------------------------------------------------------
 rem Performs token substititions.
+rem
+rem OBS: gsar uses ':' to indicate a CTRL-char. Unfortunately, a ':' is used
+rem      by DOS/Windows as part of path-names, so we need to escape the ':'
+rem      by changing ':' to '::'.
 rem ----------------------------------------------------------------------------
 :subst
-    setlocal
-    rem Remove '<line-number>:' from input string.
-    set "str=%str:*:=%"
+    type "%in_file%" > "%out_file%"
 
-    rem Start substituting tokens and values.
     set n=1
 :s1 while
-    if not defined token_%n% goto :s2
-	call set "s1=%delim1%%%token_%n%%%%delim2%"
-	call set "s2=%%value_%n%%%"
-	call set "str=%%str:%s1%=%s2%%%"
-	echo.%str%>>"%out_file%"
+    if not defined token_%n% goto :EOF
+	call set s1=%%token_%n%%%
+	call set s2=%%value_%n%%%
+
+	gsar -o -s"@%s1::=::%@" -r"%s2::=::%" "%out_file%" >NUL:
 	set /a n+=1
     goto :s1
-:s2
-    endlocal
 goto :EOF
 
 rem ----------------------------------------------------------------------------
