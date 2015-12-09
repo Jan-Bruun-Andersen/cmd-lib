@@ -12,7 +12,7 @@
 :: =             Default is !prefix!.
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-08
+:: @version @(#) Version: 2015-12-09
 
     verify 2>NUL: other
     setlocal EnableExtensions
@@ -29,12 +29,10 @@
     set "action=configure"
 
     set "PROG_CFG=%~dpn0.dat"
-    call src\lib\cl_read_cfg /vsub "%PROG_CFG%" ^
+    call :read_cfg /vsub "%PROG_CFG%" ^
 	PACKAGE   ^
 	prefix    ^
 	templates || goto :error_exit
-
-    for %%F in (gsar.exe) do if "" == "%%~$PATH:F" set "PATH=%~dp0\bin;%PATH%"
 
 :getopts
     if /i "%~1" == "/?"		set "show_help=true"	& shift /1		& goto :getopts
@@ -46,6 +44,9 @@
     rem cl_init needs to be here, after setting 'cfg_cmdlib'.
     for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cfg_cmdlib%;%PATH%"
     call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
+
+    for %%F in (gsar.exe) do if "" == "%%~$PATH:F" set "PATH=%~dp0\bin;%PATH%"
+    gsar -G > NUL: || (echo Failed to locate gsar.exe. & goto :exit)
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
@@ -123,6 +124,53 @@ goto :EOF
 goto :EOF
 
 rem .--------------------------------------------------------------------------
+rem | Reads configuration variables and values.
+rem |
+rem | A configuration file is a simple text file, where lines starting
+rem | with a # is treated as a comment. Everything else should be simple
+rem | assignments, e.g.
+rem |
+rem |   PACKAGE=cmd-lib
+rem |
+rem | Each value will be assigned to a variable named cfg_<NAME>.
+rem |
+rem | @option /vsub        Perform variable substition on the values.
+rem |
+rem | @param  config-file  Name of configuration file.
+rem | @param  req-value    Name of required configuration value. A missing value
+rem |                      will result in an error.
+rem '--------------------------------------------------------------------------
+:read_cfg [/vsub] config-file [req-value ...]
+    time >NUL: /t & rem Set ErrorLevel = 0.
+
+    rem Park information about the /vsub option into %0 for later.
+    if /i "%~1" == "/vsub" shift
+
+    if not exist "%~1" (
+	echo>&2 ERROR - Configuration file "%~1" not found.
+	goto :error_exit
+    )
+
+    rem Read the configuration file and assign values to cfg_XXXX.
+
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (set cfg_%%V=%%W)
+
+    for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
+	if not defined cfg_%%V (
+	    echo>&2 ERROR - Configuration value "%%V" is missing. Check "%~1".
+	    goto :error_exit
+	)
+    )
+
+    if /i not "%~0" == "/vsub" goto :EOF
+
+    rem Re-read the configuration file and use 'call set ...' to do variable
+    rem substitution.
+
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (call set cfg_%%V=%%W)
+goto :EOF
+
+rem .--------------------------------------------------------------------------
 rem | Displays a selection of variables belonging to this script.
 rem | Very handy when debugging.
 rem '--------------------------------------------------------------------------
@@ -147,7 +195,7 @@ goto :EOF
 
 rem ----------------------------------------------------------------------------
 rem Sets ErrorLevel and exit-status. Without a proper exit-status tests like
-rem 'command && echo Success || echo Failure' will not work,
+rem 'command && echo Success || echo Failure' will not work.
 rem
 rem OBS: NO commands must follow the call to %ComSpec%, not even REM-arks,
 rem      or the exit-status will be destroyed. However, null commands like
