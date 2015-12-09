@@ -16,11 +16,8 @@
 :: =
 :: = PARAMETERS
 :: =   config-file  Name of configuration file.
-:: =   req-value    Required configuration value. A missing value will result
-:: =                in an error.
-:: =
-:: = GLOBAL VARIABLES
-:: =   cfg_XXXX = Configuration variable XXXX (from configuration file).
+:: =   req-value    Name of required configuration value. A missing value will
+:: =                result in an error.
 :: =
 :: = EXAMPLE
 :: =   ,---------------------------------------------------.
@@ -29,12 +26,11 @@
 :: =   | echo Value of VAR = "%cfg_VAR%"                   |
 :: =   '---------------------------------------------------'
 :: =
-:: = PARAMETERS
-:: =   config-file  Name of configuration file.
-:: =   req-value    Name of required configuration values.
+:: = GLOBAL VARIABLES
+:: =   cfg_XXXX = Configuration variable XXXX (from configuration file).
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-08
+:: @version @(#) Version: 2015-12-09
 
     time >NUL: /t & rem Set ErrorLevel = 0.
 
@@ -62,7 +58,7 @@
     rem Re-read the configuration file and use 'call set ...' to do variable
     rem substitution.
 
-    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do call set cfg_%%V=%%W
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (call set cfg_%%V=%%W)
 goto :EOF
 
 rem ----------------------------------------------------------------------------
