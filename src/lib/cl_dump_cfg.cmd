@@ -12,7 +12,7 @@
 :: @author Jan Bruun Andersen
 :: @version @(#) Version: 2015-12-08
 
-    setlocal
+    setlocal EnableDelayedExpansion
     time >NUL: /t & rem Set ErrorLevel = 0.
 
     set csize=%~1
@@ -20,7 +20,8 @@
     for /L %%L in (1,1,%csize%) do set "rpad=!rpad! "
 
     for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
-	echo %%V = "%%W"
+	set "V=%%V!rpad!"
+	echo !V:~4,%csize%! = "%%W"
     )
     endlocal
 goto :EOF
