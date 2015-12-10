@@ -56,6 +56,11 @@
 	echo.
     )
 
+    if not exist "%in_file%" (
+	echo>&2 ERROR - Input file "%in_file%" for %0 does not exist!
+	goto :error_exit
+    )
+
     if "%out_file%" == "%in_file%" (
 	echo>&2 ERROR - %0 cowardly refuses to overwrite the input-file "%in_file%".
 	goto :error_exit
