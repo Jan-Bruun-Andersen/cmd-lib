@@ -30,7 +30,7 @@
 :: =   cfg_XXXX = Configuration variable XXXX (from configuration file).
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-09
+:: @version @(#) Version: 2015-12-10
 
     time >NUL: /t & rem Set ErrorLevel = 0.
 
@@ -51,8 +51,7 @@
 
     rem Read the configuration file and assign values to cfg_XXXX.
 
-    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do ^
-	(set cfg_%%V=%%W)
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (set cfg_%%V=%%W)
 
     for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
 	if not defined cfg_%%V (
