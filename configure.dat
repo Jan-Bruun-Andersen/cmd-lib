@@ -4,8 +4,9 @@
 # prefix     Name of directory to install PACKAGE in.
 # templates  List of template files which will be subjected to token substitution.
 #
-# @version (#) Verson: 2015-12-08
+# @version (#) Verson: 2015-12-10
 
 PACKAGE=cmd-lib
 prefix=%UserProfile%\LocalTools\cmd-lib.lib
+cmdlib=src\lib
 templates=install.cmd.tmpl

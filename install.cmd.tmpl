@@ -25,18 +25,17 @@
 
     if /i "%~1" == "/trace" shift /1 & prompt $G$G & echo on
 
-    rem Prepend the local copy of cmd-lib to our PATH.
-    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%~dp0\src\lib;%PATH%"
-    call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
-
 :defaults
     set "cfg_PACKAGE=@PACKAGE@"
     set "cfg_prefix=@PREFIX@"
+    set "cfg_cmdlib=@CMDLIB@"
 
     set "show_help=false"
     set "verbosity=0"
     set "dry_run=false"
     set "action=install"
+    set "prefix=%cfg_prefix%"
+    set "cmdlib=%cfg_cmdlib%"
     set "extras=false"
 
     set "cnt_mkdir=0"
@@ -48,8 +47,11 @@
     if /i "%~1" == "/v"		set /a "verbosity+=1"	& shift /1		& goto :getopts
     if /i "%~1" == "/n"		set "dry_run=true"	& shift /1		& goto :getopts
     if /i "%~1" == "/clean"	set "action=clean"	& shift /1		& goto :getopts
-    if /i "%~1" == "/prefix"	set "cfg_prefix=%~2"	& shift /1 & shift /1	& goto :getopts
+    if /i "%~1" == "/prefix"	set "prefix=%~2"	& shift /1 & shift /1	& goto :getopts
     if /i "%~1" == "/extras"	set "extras=true"	& shift /1		& goto :getopts
+
+    for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cmdlib%;%PATH%"
+    call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
@@ -69,7 +71,7 @@
 	goto :error_exit
     )
 
-    if not defined cfg_prefix (
+    if not defined prefix (
 	echo /prefix directory not defined.
 	echo.
     	call cl_usage "%PROG_FULL%"
@@ -77,10 +79,14 @@
     )
 
     if 0%verbosity% geq 2 (
-	echo dry-run     = "%dry_run%"
+	echo PACKAGE     = "%cfg_PACKAGE%"
+	echo dry_run     = "%dry_run%"
 	echo action      = "%action%"
-	call cl_dump_cfg 11
+	echo prefix      = "%prefix%"
+	echo cmdlib      = "%cmdlib%"
+	echo extras      = "%extras%"
 	echo.
+	if 0%verbosity% geq 3 call cl_dump_cfg /fullname & echo.
     )
 
     rem .----------------------------------------------------------------------
@@ -146,8 +152,6 @@ goto :EOF
     ) >&2
 goto :EOF
 
- :EOF
-
 rem .--------------------------------------------------------------------------
 rem | Displays a selection of variables belonging to this script.
 rem | Very handy when debugging.
@@ -161,12 +165,14 @@ rem '--------------------------------------------------------------------------
     echo verbosity      = "%verbosity%"
     echo dry_run        = "%dry_run%"
     echo action         = "%action%"
+    echo prefix         = "%prefix%"
+    echo cmdlib         = "%cmdlib%"
     echo extras         = "%extras%"
-
-    call cl_dump_cfg 14
-
+    echo.
     echo cnt_mkdir      = "%cnt_mkdir%"
     echo cnt_copy       = "%cnt_copy%"
+    echo.
+    call cl_dump_cfg /fullname
 
     if defined tmp_dir if exist "%tmp_dir%\" (
 	echo.
