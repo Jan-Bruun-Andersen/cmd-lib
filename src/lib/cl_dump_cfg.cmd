@@ -1,27 +1,44 @@
-:cl_dump_cfg column1-size
+:cl_dump_cfg [/cs1 column1-size] [/fullname]
 
 :: = DESCRIPTION
 :: =   Displays configuration values (variables with prefix 'cfg_') in two
 :: =   columns:
 :: =
-:: =   variable-name = "variable-value"
+:: =   name = "value"
 :: =
-:: = PARAMETERS
-:: =   column1-size  Max size of name column.
+:: = OPTIONS
+:: =   /cs1       Max size of column 1 (variable-names).
+:: =   /fullname  Show the full name of the variable (including cfg_).
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-08
+:: @version @(#) Version: 2015-12-10
 
     setlocal EnableDelayedExpansion
     time >NUL: /t & rem Set ErrorLevel = 0.
 
-    set csize=%~1
+    set "csize=14"
+    set "vprefix="
     set "rpad="
+
+:getopts
+    if /i "%~1" == "/cs1"      set "csize=%~2"	    & shift /1 & shift /1   & goto :getopts
+    if /i "%~1" == "/fullname" set "vprefix=cfg_"   & shift /1		    & goto :getopts
+
+    set "char1=%~1"
+    set "char1=%char1:~0,1%"
+    if "%char1%" == "/" (
+	echo Unknown option - %1.
+	echo.
+	call cl_usage "%~f0"
+	goto :error_exit
+    )
+
     for /L %%L in (1,1,%csize%) do set "rpad=!rpad! "
 
     for /F "usebackq delims== tokens=1,*" %%V in (`set cfg_`) do (
 	set "V=%%V!rpad!"
-	echo !V:~4,%csize%! = "%%W"
+	if not defined vprefix set "V=!V:*cfg_=!"
+	echo !V:~0,%csize%! = "%%W"
     )
     endlocal
 goto :EOF
