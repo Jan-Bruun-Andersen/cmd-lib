@@ -42,9 +42,17 @@
 	goto :error_exit
     )
 
+    rem Rob van der Woude has some information at
+    rem http://www.robvanderwoude.com/battech_inputvalidation_commandline.php
+    rem on how to check a configuration file for unsafe characters.
+    rem It might be worth to add support for such in the future, but
+    rem not now. Besides the regex he uses causes 'findstr' to hang on
+    rem my PC (Windows 10).
+
     rem Read the configuration file and assign values to cfg_XXXX.
 
-    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do (set cfg_%%V=%%W)
+    for /F "usebackq eol=# tokens=1,* delims==" %%V in ("%~1") do ^
+	(set cfg_%%V=%%W)
 
     for %%V in (%2 %3 %4 %5 %6 %7 %7 %9) do (
 	if not defined cfg_%%V (
@@ -63,7 +71,7 @@ goto :EOF
 
 rem ----------------------------------------------------------------------------
 rem Sets ErrorLevel and exit-status. Without a proper exit-status tests like
-rem 'command && echo Success || echo Failure' will not work,
+rem 'command && echo Success || echo Failure' will not work.
 rem
 rem OBS: NO commands must follow the call to %ComSpec%, not even REM-arks,
 rem      or the exit-status will be destroyed. However, null commands like
