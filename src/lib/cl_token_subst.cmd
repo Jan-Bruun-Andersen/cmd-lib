@@ -28,12 +28,12 @@
 :: =   '-----------------------------------------------------'
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2015-12-07
+:: @version @(#) Version: 2015-12-10
 
-    setlocal DisableDelayedExpansion
+    setlocal
     time >NUL: /t & rem Set ErrorLevel = 0.
 
-    set "delims=@@"
+    set "delims=@@"	    & rem Default token delimiters.
     set "delim1="
     set "delim2="
 
@@ -47,85 +47,47 @@
     set "in_file=%~1"  & shift /1
     set "out_file=%~1" & shift /1
 
-    if "%out_file%" == "%in_file%" (
-	echo Warning - %0 cowardly refuses to overwrite the input-file "%in_file%".
-	goto :error_exit
-    )
-
-    rem Set tokens and values. Since we do not know how many token assignments
-    rem we have to process, we pass the original parameter list to ztokens.
-    rem ztokens is then responsible for ignoring any options, input and output
-    rem parameters, and only parse the token assignments.
-
-    call :ctokens
-    call :ztokens %*
-
-    if false == true (
-	echo delim1="%delim1%
-	echo delim2="%delim2%
-	for /L %%I in (1,1,100) do if defined token_%%I (
-	    call echo DEBUG token_%%I = '%%token_%%I%%', value_%%I = '%%value_%%I%%'
-	)
+    if true == false (
+	echo delim1   = "%delim1%"
+	echo delim2   = "%delim2%"
+	echo.
+	echo in_file  = "%in_file%"
+	echo out_file = "%out_file%"
 	echo.
     )
 
-    if exist "%out_file%" del "%out_file%"
+    if "%out_file%" == "%in_file%" (
+	echo>&2 ERROR - %0 cowardly refuses to overwrite the input-file "%in_file%".
+	goto :error_exit
+    )
 
-    call :subst "%in_file%" "%out_file%"
+    if  exist   "gsar.exe"                               goto :do_gsar
+    for %%F in ("gsar.exe") do if not "" == "%%~$PATH:F" goto :do_gsar
 
-    if not exist "%out_file%" goto :error_exit
-    endlocal
-    goto :exit
-goto :EOF
+    echo>&2 ERROR - %0 is unable to locate the required tool for token substition.
+    echo>&2.        Please make sure "gsar.exe" is on the search PATH.
+    goto :error_exit
 
-rem ----------------------------------------------------------------------------
-rem Clears tokens and values.
-rem ----------------------------------------------------------------------------
-:ctokens
-    for /F %%V in ('set token_ 2^>NUL:') do set %%V=
-    for /F %%V in ('set value_ 2^>NUL:') do set %%V=
-goto :EOF
+:do_gsar
+    rem ------------------------------------------------------------------------
+    rem Perform token substititions using gsar (General Search and Replace).
+    rem
+    rem First initialise the output file, then loop through the list of tokens
+    rem and do the required substitutions.
+    rem
+    rem OBS: gsar uses ':' to indicate a CTRL-char. Escaping is done by doubling
+    rem      up and changing ':' to '::'. Hence the %s2::=::% stuff.
+    rem ------------------------------------------------------------------------
 
-rem ----------------------------------------------------------------------------
-rem Sets tokens and values.
-rem ----------------------------------------------------------------------------
-:ztokens [/delims XY] in-file out-file [token-assignment...]
-    rem Ignore /delims option and value.
-    if /i "%~1" == "/delims" shift & shift
-
-    rem Ignore in-file and out-file.
-    shift & shift
-
-    rem Parse remaining arguments as token assignments.
-    set n=1
-:z1 while
-    if "%~1" == "" goto :EOF
-	set "token_%n%=%~1" & shift
-	set "value_%n%=%~1" & shift
-	set /a n+=1
-    goto :z1
-goto :EOF
-
-rem ----------------------------------------------------------------------------
-rem Performs token substititions.
-rem
-rem OBS: gsar uses ':' to indicate a CTRL-char. Unfortunately, a ':' is used
-rem      by DOS/Windows as part of path-names, so we need to escape the ':'
-rem      by changing ':' to '::'.
-rem ----------------------------------------------------------------------------
-:subst
     type "%in_file%" > "%out_file%"
 
-    set n=1
-:s1 while
-    if not defined token_%n% goto :EOF
-	call set s1=%%token_%n%%%
-	call set s2=%%value_%n%%%
-
-	gsar -o -s"@%s1::=::%@" -r"%s2::=::%" "%out_file%" >NUL:
-	set /a n+=1
-    goto :s1
-goto :EOF
+    :gsar
+	if "%~1" == "" goto :EOF
+	set "s1=%~1" & shift /1
+	set "s2=%~1" & shift /1
+	gsar -o -s"@%s1::=::%@" -r"%s2::=::%" "%out_file%" >NUL: || goto :error_exit
+    goto :gsar
+goto :exit
 
 rem ----------------------------------------------------------------------------
 rem Sets ErrorLevel and exit-status. Without a proper exit-status tests like
