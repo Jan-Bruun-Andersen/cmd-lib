@@ -61,6 +61,10 @@
 	goto :error_exit
     )
 
+    if exist "%out_file%" del "%out_file%"
+
+goto :do_fstr
+
     if  exist   "gsar.exe"                               goto :do_gsar
     for %%F in ("gsar.exe") do if not "" == "%%~$PATH:F" goto :do_gsar
 
@@ -83,10 +87,31 @@
 
     :gsar
 	if "%~1" == "" goto :EOF
-	set "s1=%~1" & shift /1
-	set "s2=%~1" & shift /1
-	gsar -o -s"@%s1::=::%@" -r"%s2::=::%" "%out_file%" >NUL: || goto :error_exit
+	set "token=%~1" & shift /1
+	set "value=%~1" & shift /1
+	gsar -o -s"@%token::=::%@" -r"%value::=::%" "%out_file%" >NUL: || goto :error_exit
     goto :gsar
+goto :exit
+
+:do_fstr
+    setlocal EnableDelayedExpansion
+
+    type "%in_file%" > "%out_file%"
+
+    :fstr
+	if "%~1" == "" goto :EOF
+	set "token=%~1" & shift /1
+	set "value=%~1" & shift /1
+
+	move "%out_file%" "%out_file%.tmp" >NUL:
+
+	for /F "usebackq delims= tokens=1" %%I in (`findstr /n /r ".*" "%out_file%.tmp"`) do (
+	    set "S=%%I"
+	    set "S=!S:%delim1%%token%%delim2%=%value%!"
+	    set "S=!S:*:=!"
+	    echo.!S!>>"%out_file%"
+	)
+    goto :fstr
 goto :exit
 
 rem ----------------------------------------------------------------------------
