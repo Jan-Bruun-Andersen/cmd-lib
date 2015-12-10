@@ -121,8 +121,7 @@ goto :EOF
 
     call cl_token_subst "%~1" "%out_file%" ^
 	PACKAGE=%cfg_PACKAGE%  ^
-	DST_DIR="%cfg_prefix%" ^
-	CMD_LIB="%cfg_cmdlib%"
+	PREFIX="%cfg_prefix%"
 
     endlocal
 goto :EOF

@@ -8,5 +8,4 @@
 
 PACKAGE=cmd-lib
 prefix=%UserProfile%\LocalTools\cmd-lib.lib
-cmdlib=src\lib
 templates=install.cmd.tmpl
