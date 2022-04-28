@@ -68,30 +68,17 @@
 
     if exist "%out_file%" del "%out_file%"
 
-    rem If possible, use gsar.exe to the substition. First look in the current
-    rem directory, then look in PATH.
-    rem
-    rem Fallback is to use the slower 'do_fstr' method.
-    rem
-    rem OBS: We are NOT do a 'call' since we are not interested in creating a
+    rem OBS: We are NOT doing a 'call' since we are not interested in creating a
     rem      new parameter list. We have already parsed the original parameter
     rem      list for /delims, input and output file specifications. %1 and %2
     rem      are now poised to be used as the first set of token/value pairs.
 
-    if  exist   "gsar.exe"                               goto :do_gsar
-    for %%F in ("gsar.exe") do if not "" == "%%~$PATH:F" goto :do_gsar
-
-    if true == false (
-	echo>&2 ERROR - %0 is unable to locate the required tool for token substition.
-	echo>&2.        Please make sure "gsar.exe" is on the search PATH.
-	goto :error_exit
-    )
-
-    goto :do_fstr
+    goto :do_gsar
 goto :EOF
 
 rem ------------------------------------------------------------------------
-rem Perform token substititions using gsar (General Search and Replace).
+rem Perform token substititions using gsar (General Search and Replace) if
+rem possible. Fallback is to use the slower 'do_fstr' method.
 rem
 rem First initialise the output file, then loop through the list of tokens
 rem and do the required substitutions.
@@ -100,6 +87,9 @@ rem OBS: gsar uses ':' to indicate a CTRL-char. Escaping is done by doubling
 rem      up and changing ':' to '::'. Hence the %s2::=::% stuff.
 rem ------------------------------------------------------------------------
 :do_gsar
+    rem Can gsar display the GNU General Public License?
+    gsar -G >NUL: 2>&1 || goto :do_fstr
+
     setlocal
 
     type "%in_file%" > "%out_file%"
@@ -126,6 +116,7 @@ rem rotating the input file, and do the required substitutions.
 rem ----------------------------------------------------------------------------
 :do_fstr
     setlocal
+    
     type "%in_file%" > "%out_file%"
 
     :fstr2
