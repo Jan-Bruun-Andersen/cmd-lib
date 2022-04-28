@@ -90,6 +90,9 @@
 goto :EOF
 
 :do_configure
+    for %%F in (gsar.exe) do if "" == "%%~$PATH:F" set "PATH=%~dp0\bin;%PATH%"
+    gsar -G >NUL: 2>&1 || (echo INFO: Failed to locate and/or start gsar.exe. This will be a bit slow. >&2)
+
     for %%T in (%cfg_templates%) do call :do_subst "%%T"
     xcopy build\install.cmd /y /q >NUL:
 goto :EOF
