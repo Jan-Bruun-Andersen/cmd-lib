@@ -14,7 +14,7 @@
 :: =   configure.dat  Configuration file for !PROG_NAME!.
 
 :: @author Jan Bruun Andersen
-:: @version @(#) Version: 2016-03-22
+:: @version @(#) Version: 2022-04-28
 
     verify 2>NUL: other
     setlocal EnableExtensions
@@ -44,9 +44,6 @@
 
     for %%F in (cl_init.cmd) do if "" == "%%~$PATH:F" set "PATH=%cmdlib%;%PATH%"
     call cl_init "%~dpf0" || (echo Failed to initialise cmd-lib. & goto :exit)
-
-    for %%F in (gsar.exe) do if "" == "%%~$PATH:F" set "PATH=%~dp0\bin;%PATH%"
-    gsar -G > NUL: || (echo Failed to locate gsar.exe. & goto :exit)
 
     set "char1=%~1"
     set "char1=%char1:~0,1%"
